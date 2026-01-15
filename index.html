@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speed Reader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #0d0d0f 0%, #141419 100%);
+      color: #e8e8ed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      padding: 0 0 32px;
+    }
+
+    h1 {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #5a5a6e;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .reader-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 280px;
+      padding: 80px 20px;
+      position: relative;
+      background: rgba(255,255,255,0.01);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.04);
+      transition: all 0.3s ease;
+    }
+
+    .word-display {
+      font-size: 4.5rem;
+      font-weight: 300;
+      min-height: 100px;
+      position: relative;
+      width: 100%;
+      font-family: 'Newsreader', Georgia, serif;
+      letter-spacing: -0.02em;
+    }
+
+    .word-inner {
+      position: absolute;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .word-display .before {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .word-display .orp {
+      color: #f45866;
+    }
+
+    .word-display .after {
+      color: rgba(255,255,255,0.5);
+    }
+
+    .focus-line {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 1px;
+      height: 90px;
+      background: linear-gradient(to bottom, transparent, rgba(244,88,102,0.3) 30%, rgba(244,88,102,0.3) 70%, transparent);
+      pointer-events: none;
+    }
+
+    .wpm-display {
+      position: absolute;
+      bottom: 24px;
+      right: 28px;
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: #5a5a6e;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .wpm-display span {
+      color: #8a8a9e;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 2px;
+      background: rgba(255,255,255,0.06);
+      margin-top: 48px;
+      border-radius: 1px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f45866, #ff7b87);
+      width: 0%;
+      transition: width 0.15s ease-out;
+    }
+
+    .controls {
+      padding: 40px 0 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #b8b8c8;
+      padding: 12px 28px;
+      font-size: 0.85rem;
+      font-weight: 400;
+      cursor: pointer;
+      border-radius: 100px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    button:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button.primary {
+      background: #f45866;
+      border-color: transparent;
+      color: #fff;
+      font-weight: 500;
+      padding: 14px 36px;
+    }
+
+    button.primary:hover {
+      background: #ff6b78;
+      box-shadow: 0 4px 24px rgba(244,88,102,0.3);
+    }
+
+    button.icon-btn {
+      padding: 10px 16px;
+      font-size: 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .speed-control label {
+      color: #5a5a6e;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .speed-control input[type="range"] {
+      width: 180px;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .speed-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #f45866;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(244,88,102,0.4);
+    }
+
+    .speed-value {
+      color: #f45866;
+      font-weight: 500;
+      font-size: 0.9rem;
+      min-width: 70px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .text-input-area {
+      padding: 24px 0 0;
+    }
+
+    .textarea-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .textarea-label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #5a5a6e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .textarea-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .textarea-actions button {
+      padding: 6px 14px;
+      font-size: 0.75rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #a8a8b8;
+      padding: 20px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      border-radius: 16px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: rgba(244,88,102,0.4);
+      background: rgba(255,255,255,0.03);
+    }
+
+    textarea::placeholder {
+      color: #4a4a5a;
+    }
+
+    .stats {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      padding: 16px 0;
+      color: #5a5a6e;
+      font-size: 0.8rem;
+    }
+
+    .stat {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat span {
+      color: #8a8a9e;
+    }
+
+    .mode-toggle {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .mode-toggle button {
+      padding: 10px 20px;
+      font-size: 0.8rem;
+    }
+
+    .mode-toggle button.active {
+      background: rgba(244,88,102,0.15);
+      border-color: rgba(244,88,102,0.3);
+      color: #f45866;
+    }
+
+    /* Info sections */
+    .info-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    .info-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .info-card h3 {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #f45866;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+    }
+
+    .info-card p {
+      font-size: 0.85rem;
+      color: #8a8a9e;
+      line-height: 1.7;
+    }
+
+    .info-card ul {
+      list-style: none;
+      font-size: 0.85rem;
+      color: #8a8a9e;
+    }
+
+    .info-card li {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .info-card li:last-child {
+      border-bottom: none;
+    }
+
+    .info-card .key {
+      color: #5a5a6e;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.05);
+      padding: 2px 8px;
+      border-radius: 4px;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .research-link {
+      color: #f45866;
+      text-decoration: none;
+    }
+
+    .research-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Theater mode */
+    .theater-mode {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .theater-mode.active {
+      display: flex;
+    }
+
+    .theater-mode .reader-area {
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      min-height: auto;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .theater-mode .word-display {
+      font-size: 8rem;
+    }
+
+    .theater-mode .focus-line {
+      height: 160px;
+    }
+
+    .theater-mode .wpm-display {
+      font-size: 1rem;
+      bottom: 40px;
+      right: 50px;
+    }
+
+    .theater-mode .progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      height: 4px;
+      border-radius: 0;
+    }
+
+    .theater-exit {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #888;
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .theater-exit:hover {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    .theater-controls {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .theater-mode:hover .theater-controls {
+      opacity: 1;
+    }
+
+    .theater-controls button {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      padding: 12px 24px;
+    }
+
+    .theater-hint {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #444;
+      font-size: 0.8rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .theater-mode:hover .theater-hint {
+      opacity: 1;
+    }
+
+    /* Test Link */
+    .test-link-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .test-link {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 24px 28px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .test-link:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(244,88,102,0.3);
+      transform: translateY(-2px);
+    }
+
+    .test-link-icon {
+      font-size: 1.5rem;
+      background: rgba(244,88,102,0.15);
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+    }
+
+    .test-link-content {
+      flex: 1;
+    }
+
+    .test-link-title {
+      display: block;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #e8e8ed;
+      margin-bottom: 4px;
+    }
+
+    .test-link-desc {
+      display: block;
+      font-size: 0.85rem;
+      color: #5a5a6e;
+    }
+
+    .test-link-arrow {
+      font-size: 1.2rem;
+      color: #5a5a6e;
+      transition: transform 0.2s;
+    }
+
+    .test-link:hover .test-link-arrow {
+      transform: translateX(4px);
+      color: #f45866;
+    }
+
+    @media (max-width: 700px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .word-display {
+        font-size: 2.8rem;
+      }
+
+      .theater-mode .word-display {
+        font-size: 4rem;
+      }
+
+      .speed-control input[type="range"] {
+        width: 120px;
+      }
+
+      .container {
+        padding: 24px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Speed Reader</h1>
+    </header>
+
+    <div class="reader-area" id="readerArea">
+      <div class="focus-line"></div>
+      <div class="word-display" id="wordDisplay">
+        <div class="word-inner" id="wordInner">
+          <span class="before"></span><span class="orp"></span><span class="after"></span>
+        </div>
+      </div>
+      <div class="wpm-display"><span id="currentWpm">300</span> wpm</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control-row">
+        <button id="playBtn" class="primary">Play</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+        <button id="theaterBtn" class="icon-btn" title="Theater Mode">Full Screen</button>
+      </div>
+
+      <div class="control-row">
+        <div class="speed-control">
+          <label>Speed:</label>
+          <input type="range" id="wpmSlider" min="100" max="1200" value="300" step="50">
+          <span class="speed-value" id="wpmValue">300 wpm</span>
+        </div>
+      </div>
+
+      <div class="control-row mode-toggle">
+        <button id="modeFixed" class="active">Fixed Speed</button>
+        <button id="modeRamp">Ramp Up (300-900)</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat">Words: <span id="wordCount">0</span></div>
+        <div class="stat">Progress: <span id="wordProgress">0/0</span></div>
+        <div class="stat">Time: <span id="timeEstimate">0:00</span></div>
+      </div>
+    </div>
+
+    <div class="text-input-area">
+      <div class="textarea-header">
+        <span class="textarea-label">Your Text</span>
+        <div class="textarea-actions">
+          <button id="pasteBtn">Paste</button>
+          <button id="clearBtn">Clear</button>
+        </div>
+      </div>
+      <textarea id="textInput" placeholder="Paste any text here - articles, books, emails..."></textarea>
+    </div>
+
+    <div class="info-section">
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>How to Use</h3>
+          <ul>
+            <li><span class="key">Space</span> Play / Pause</li>
+            <li><span class="key">Arrow Keys</span> Adjust speed</li>
+            <li><span class="key">R</span> Reset to beginning</li>
+            <li><span class="key">F</span> Toggle full screen</li>
+            <li><span class="key">Esc</span> Exit full screen</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>The Science</h3>
+          <p>
+            This uses <strong>RSVP</strong> (Rapid Serial Visual Presentation) with the <strong>Optimal Viewing Position</strong> highlighted in red. Research by <a href="https://www.researchgate.net/publication/16964612" class="research-link" target="_blank">O'Regan et al. (1984)</a> found we fixate slightly left of center when reading - about 25-30% into each word. The red letter marks this spot so your eye stays fixed while words flow past.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Link -->
+    <div class="test-link-section">
+      <a href="test.html" class="test-link">
+        <span class="test-link-icon">&#9889;</span>
+        <div class="test-link-content">
+          <span class="test-link-title">Test Your Comprehension</span>
+          <span class="test-link-desc">Find your optimal reading speed with 5 timed tests</span>
+        </div>
+        <span class="test-link-arrow">&rarr;</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Theater Mode -->
+  <div class="theater-mode" id="theaterMode">
+    <button class="theater-exit" id="theaterExit">Exit (Esc)</button>
+    <div class="reader-area">
+      <div class="focus-line"></div>
+      <div class="word-display" id="theaterWordDisplay">
+        <div class="word-inner" id="theaterWordInner">
+          <span class="before"></span><span class="orp"></span><span class="after"></span>
+        </div>
+      </div>
+      <div class="wpm-display"><span id="theaterWpm">300</span> wpm</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="theaterProgress"></div>
+      </div>
+    </div>
+    <div class="theater-hint">Space to play/pause &bull; Arrow keys for speed &bull; Esc to exit</div>
+    <div class="theater-controls">
+      <button id="theaterPlayBtn">Play</button>
+      <button id="theaterPauseBtn">Pause</button>
+      <button id="theaterResetBtn">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    const wordDisplay = document.getElementById('wordDisplay');
+    const wordInner = document.getElementById('wordInner');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const wpmSlider = document.getElementById('wpmSlider');
+    const wpmValue = document.getElementById('wpmValue');
+    const currentWpm = document.getElementById('currentWpm');
+    const textInput = document.getElementById('textInput');
+    const progressFill = document.getElementById('progressFill');
+    const wordCount = document.getElementById('wordCount');
+    const wordProgress = document.getElementById('wordProgress');
+    const timeEstimate = document.getElementById('timeEstimate');
+    const modeFixed = document.getElementById('modeFixed');
+    const modeRamp = document.getElementById('modeRamp');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Theater mode elements
+    const theaterMode = document.getElementById('theaterMode');
+    const theaterBtn = document.getElementById('theaterBtn');
+    const theaterExit = document.getElementById('theaterExit');
+    const theaterWordDisplay = document.getElementById('theaterWordDisplay');
+    const theaterWordInner = document.getElementById('theaterWordInner');
+    const theaterWpm = document.getElementById('theaterWpm');
+    const theaterProgress = document.getElementById('theaterProgress');
+    const theaterPlayBtn = document.getElementById('theaterPlayBtn');
+    const theaterPauseBtn = document.getElementById('theaterPauseBtn');
+    const theaterResetBtn = document.getElementById('theaterResetBtn');
+
+    let words = [];
+    let currentIndex = 0;
+    let isPlaying = false;
+    let timeoutId = null;
+    let wpm = 300;
+    let rampMode = false;
+    let isTheaterMode = false;
+    const RAMP_START = 300;
+    const RAMP_END = 900;
+
+    // Calculate ORP position (about 25-30% into the word)
+    function getOrpIndex(word) {
+      if (word.length <= 1) return 0;
+      if (word.length <= 3) return 1;
+      return Math.floor(word.length * 0.28);
+    }
+
+    function displayWord(word, targetInner, targetDisplay) {
+      const inner = targetInner || wordInner;
+      const display = targetDisplay || wordDisplay;
+
+      if (!word) {
+        inner.innerHTML = '<span class="before"></span><span class="orp"></span><span class="after"></span>';
+        inner.style.left = '50%';
+        inner.style.transform = 'translateX(-50%) translateY(-50%)';
+        inner.style.top = '50%';
+        return;
+      }
+
+      const orpIndex = getOrpIndex(word);
+      const before = word.slice(0, orpIndex);
+      const orp = word[orpIndex];
+      const after = word.slice(orpIndex + 1);
+
+      inner.innerHTML = `<span class="before">${before}</span><span class="orp">${orp}</span><span class="after">${after}</span>`;
+
+      const orpEl = inner.querySelector('.orp');
+      const containerWidth = display.offsetWidth;
+      const containerCenter = containerWidth / 2;
+
+      const orpRect = orpEl.getBoundingClientRect();
+      const innerRect = inner.getBoundingClientRect();
+      const orpCenterInWord = (orpRect.left - innerRect.left) + (orpRect.width / 2);
+
+      const leftOffset = containerCenter - orpCenterInWord;
+      inner.style.left = leftOffset + 'px';
+      inner.style.transform = 'translateY(-50%)';
+      inner.style.top = '50%';
+    }
+
+    function updateAllDisplays(word) {
+      displayWord(word, wordInner, wordDisplay);
+      if (isTheaterMode) {
+        displayWord(word, theaterWordInner, theaterWordDisplay);
+      }
+    }
+
+    function parseText() {
+      const text = textInput.value.trim();
+      words = text.split(/\s+/).filter(w => w.length > 0);
+      wordCount.textContent = words.length;
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const progress = words.length > 0 ? (currentIndex / words.length) * 100 : 0;
+      progressFill.style.width = progress + '%';
+      theaterProgress.style.width = progress + '%';
+      wordProgress.textContent = `${currentIndex}/${words.length}`;
+
+      const remainingWords = words.length - currentIndex;
+      const currentWpmVal = rampMode ? getCurrentRampWpm() : wpm;
+      const minutes = remainingWords / currentWpmVal;
+      const mins = Math.floor(minutes);
+      const secs = Math.floor((minutes - mins) * 60);
+      timeEstimate.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function getCurrentRampWpm() {
+      if (!rampMode || words.length === 0) return wpm;
+      const progress = currentIndex / words.length;
+      return Math.round(RAMP_START + (RAMP_END - RAMP_START) * progress);
+    }
+
+    function updateWpmDisplay() {
+      const displayWpm = rampMode ? getCurrentRampWpm() : wpm;
+      currentWpm.textContent = displayWpm;
+      theaterWpm.textContent = displayWpm;
+    }
+
+    function getDelay() {
+      const currentWpmVal = rampMode ? getCurrentRampWpm() : wpm;
+      return 60000 / currentWpmVal;
+    }
+
+    function showNextWord() {
+      if (currentIndex >= words.length) {
+        stop();
+        updateAllDisplays('Done!');
+        return;
+      }
+
+      updateAllDisplays(words[currentIndex]);
+      currentIndex++;
+      updateProgress();
+      updateWpmDisplay();
+
+      if (isPlaying) {
+        timeoutId = setTimeout(showNextWord, getDelay());
+      }
+    }
+
+    function play() {
+      if (words.length === 0) {
+        parseText();
+      }
+      if (words.length === 0) return;
+
+      isPlaying = true;
+      playBtn.textContent = 'Playing...';
+      theaterPlayBtn.textContent = 'Playing...';
+      showNextWord();
+    }
+
+    function pause() {
+      isPlaying = false;
+      playBtn.textContent = 'Play';
+      theaterPlayBtn.textContent = 'Play';
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    }
+
+    function stop() {
+      pause();
+      playBtn.textContent = 'Play';
+      theaterPlayBtn.textContent = 'Play';
+    }
+
+    function reset() {
+      stop();
+      currentIndex = 0;
+      parseText();
+      updateAllDisplays('');
+      updateWpmDisplay();
+    }
+
+    // Theater mode
+    function enterTheater() {
+      isTheaterMode = true;
+      theaterMode.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      // Sync the display
+      if (currentIndex > 0 && currentIndex <= words.length) {
+        displayWord(words[currentIndex - 1], theaterWordInner, theaterWordDisplay);
+      }
+      updateWpmDisplay();
+      updateProgress();
+    }
+
+    function exitTheater() {
+      isTheaterMode = false;
+      theaterMode.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Event listeners
+    playBtn.addEventListener('click', () => isPlaying ? pause() : play());
+    pauseBtn.addEventListener('click', pause);
+    resetBtn.addEventListener('click', reset);
+    theaterPlayBtn.addEventListener('click', () => isPlaying ? pause() : play());
+    theaterPauseBtn.addEventListener('click', pause);
+    theaterResetBtn.addEventListener('click', reset);
+
+    theaterBtn.addEventListener('click', enterTheater);
+    theaterExit.addEventListener('click', exitTheater);
+
+    wpmSlider.addEventListener('input', (e) => {
+      wpm = parseInt(e.target.value);
+      wpmValue.textContent = wpm + ' wpm';
+      updateWpmDisplay();
+      updateProgress();
+    });
+
+    textInput.addEventListener('input', reset);
+
+    // Paste and clear buttons
+    pasteBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        textInput.value = text;
+        reset();
+      } catch (err) {
+        textInput.focus();
+        document.execCommand('paste');
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      textInput.value = '';
+      reset();
+    });
+
+    modeFixed.addEventListener('click', () => {
+      rampMode = false;
+      modeFixed.classList.add('active');
+      modeRamp.classList.remove('active');
+      wpmSlider.disabled = false;
+      updateWpmDisplay();
+      updateProgress();
+    });
+
+    modeRamp.addEventListener('click', () => {
+      rampMode = true;
+      modeRamp.classList.add('active');
+      modeFixed.classList.remove('active');
+      wpmSlider.disabled = true;
+      updateWpmDisplay();
+      updateProgress();
+    });
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (e.target === textInput) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPlaying) pause();
+        else play();
+      } else if (e.code === 'ArrowUp' || e.code === 'ArrowRight') {
+        e.preventDefault();
+        if (!rampMode) {
+          wpm = Math.min(1200, wpm + 50);
+          wpmSlider.value = wpm;
+          wpmValue.textContent = wpm + ' wpm';
+          updateWpmDisplay();
+        }
+      } else if (e.code === 'ArrowDown' || e.code === 'ArrowLeft') {
+        e.preventDefault();
+        if (!rampMode) {
+          wpm = Math.max(100, wpm - 50);
+          wpmSlider.value = wpm;
+          wpmValue.textContent = wpm + ' wpm';
+          updateWpmDisplay();
+        }
+      } else if (e.code === 'KeyR') {
+        e.preventDefault();
+        reset();
+      } else if (e.code === 'KeyF') {
+        e.preventDefault();
+        if (isTheaterMode) exitTheater();
+        else enterTheater();
+      } else if (e.code === 'Escape') {
+        if (isTheaterMode) exitTheater();
+      }
+    });
+
+    // Initialize
+    parseText();
+    updateWpmDisplay();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speed Reading Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #0d0d0f 0%, #141419 100%);
+      color: #e8e8ed;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 48px;
+    }
+
+    .back-link {
+      color: #5a5a6e;
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: #8a8a9e;
+    }
+
+    h1 {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #f45866;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .header-spacer {
+      width: 100px;
+    }
+
+    /* Test Selection */
+    .test-selection {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .test-selection h2 {
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: #e8e8ed;
+      margin-bottom: 8px;
+    }
+
+    .test-selection p {
+      font-size: 0.9rem;
+      color: #5a5a6e;
+      margin-bottom: 32px;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .test-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 20px 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .test-btn:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+
+    .test-btn.active {
+      background: rgba(244,88,102,0.1);
+      border-color: rgba(244,88,102,0.3);
+    }
+
+    .test-btn.completed {
+      border-color: rgba(76,175,80,0.4);
+    }
+
+    .test-btn .test-num {
+      font-size: 0.7rem;
+      color: #5a5a6e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .test-btn .test-speed {
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: #e8e8ed;
+    }
+
+    .test-btn .test-unit {
+      font-size: 0.7rem;
+      color: #5a5a6e;
+    }
+
+    .test-btn .test-score {
+      font-size: 0.75rem;
+      color: #4caf50;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Stages */
+    .stage {
+      display: none;
+    }
+
+    .stage.active {
+      display: block;
+    }
+
+    /* Intro Stage */
+    .intro-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 24px;
+      padding: 48px;
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .intro-card .test-label {
+      font-size: 0.7rem;
+      color: #5a5a6e;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .intro-card h3 {
+      font-size: 1.8rem;
+      font-weight: 300;
+      color: #e8e8ed;
+      margin-bottom: 8px;
+    }
+
+    .intro-card .wpm-badge {
+      display: inline-block;
+      background: rgba(244,88,102,0.15);
+      color: #f45866;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 32px;
+    }
+
+    .intro-card p {
+      font-size: 0.95rem;
+      color: #6a6a7e;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .start-btn {
+      background: #f45866;
+      border: none;
+      color: #fff;
+      padding: 16px 48px;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .start-btn:hover {
+      background: #ff6b78;
+      box-shadow: 0 4px 24px rgba(244,88,102,0.3);
+      transform: translateY(-2px);
+    }
+
+    /* Reading Stage */
+    .reading-area {
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .word-display {
+      font-size: 5rem;
+      font-weight: 300;
+      min-height: 120px;
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      font-family: 'Newsreader', Georgia, serif;
+      letter-spacing: -0.02em;
+    }
+
+    .word-inner {
+      position: absolute;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .word-display .before {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .word-display .orp {
+      color: #f45866;
+    }
+
+    .word-display .after {
+      color: rgba(255,255,255,0.5);
+    }
+
+    .focus-line {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 1px;
+      height: 100px;
+      background: linear-gradient(to bottom, transparent, rgba(244,88,102,0.3) 30%, rgba(244,88,102,0.3) 70%, transparent);
+      pointer-events: none;
+    }
+
+    .reading-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      color: #5a5a6e;
+      font-size: 0.85rem;
+    }
+
+    .progress-bar {
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f45866, #ff7b87);
+      width: 0%;
+      transition: width 0.1s ease-out;
+    }
+
+    /* Quiz Stage */
+    .quiz-container {
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    .quiz-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .quiz-header h3 {
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: #e8e8ed;
+      margin-bottom: 8px;
+    }
+
+    .quiz-header p {
+      font-size: 0.9rem;
+      color: #5a5a6e;
+    }
+
+    .question-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .question-card .q-num {
+      font-size: 0.7rem;
+      color: #f45866;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .question-card .q-text {
+      font-size: 1rem;
+      color: #e8e8ed;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .answer-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .answer-option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+      color: #a8a8b8;
+    }
+
+    .answer-option:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .answer-option.selected {
+      background: rgba(244,88,102,0.1);
+      border-color: rgba(244,88,102,0.3);
+      color: #e8e8ed;
+    }
+
+    .answer-option.correct {
+      background: rgba(76,175,80,0.15);
+      border-color: rgba(76,175,80,0.4);
+      color: #4caf50;
+    }
+
+    .answer-option.incorrect {
+      background: rgba(244,67,54,0.15);
+      border-color: rgba(244,67,54,0.4);
+      color: #f44336;
+    }
+
+    .answer-option .radio {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .answer-option.selected .radio {
+      border-color: #f45866;
+    }
+
+    .answer-option.selected .radio::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      background: #f45866;
+      border-radius: 50%;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 32px;
+      background: #f45866;
+      border: none;
+      color: #fff;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .submit-btn:hover {
+      background: #ff6b78;
+    }
+
+    .submit-btn:disabled {
+      background: rgba(255,255,255,0.08);
+      color: #4a4a5a;
+      cursor: not-allowed;
+    }
+
+    /* Results Stage */
+    .results-container {
+      max-width: 500px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .results-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 24px;
+      padding: 48px;
+    }
+
+    .results-card .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+
+    .results-card .score-circle.perfect {
+      border-color: rgba(76,175,80,0.5);
+      background: rgba(76,175,80,0.1);
+    }
+
+    .results-card .score-circle.good {
+      border-color: rgba(244,188,66,0.5);
+      background: rgba(244,188,66,0.1);
+    }
+
+    .results-card .score-circle.poor {
+      border-color: rgba(244,67,54,0.5);
+      background: rgba(244,67,54,0.1);
+    }
+
+    .results-card .score-num {
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: #e8e8ed;
+    }
+
+    .results-card .score-label {
+      font-size: 0.75rem;
+      color: #5a5a6e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .results-card .verdict {
+      font-size: 1rem;
+      color: #8a8a9e;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .results-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #b8b8c8;
+      padding: 14px 28px;
+      font-size: 0.9rem;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+
+    .btn-primary {
+      background: #f45866;
+      border: none;
+      color: #fff;
+      padding: 14px 28px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-primary:hover {
+      background: #ff6b78;
+    }
+
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #000;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      text-decoration: none;
+      margin-top: 20px;
+    }
+
+    .share-btn:hover {
+      background: #1a1a1a;
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .share-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Comparison Section */
+    .comparison-section {
+      margin: 28px 0;
+      padding: 24px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 16px;
+    }
+
+    .comparison-label {
+      font-size: 0.85rem;
+      color: #8a8a9e;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .comparison-label span {
+      color: #f45866;
+      font-weight: 500;
+    }
+
+    .comparison-bar {
+      position: relative;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      margin-bottom: 60px;
+    }
+
+    .comparison-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f45866, #ff7b87);
+      border-radius: 4px;
+      transition: width 0.8s ease-out;
+      position: relative;
+    }
+
+    .comparison-fill::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .comparison-markers {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+    }
+
+    .comparison-markers .marker {
+      position: absolute;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    .comparison-markers .marker-pct {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #5a5a6e;
+      margin-bottom: 2px;
+    }
+
+    .comparison-markers .marker-name {
+      display: block;
+      font-size: 0.65rem;
+      color: #4a4a5a;
+      white-space: nowrap;
+    }
+
+    .famous-comparison {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #a8a8b8;
+      margin-top: 16px;
+      padding-top: 8px;
+    }
+
+    .famous-comparison strong {
+      color: #f45866;
+    }
+
+    /* Visual Portrait Progress Bar */
+    .portrait-bar {
+      position: relative;
+      height: 80px;
+      margin: 24px 0 16px;
+    }
+
+    .portrait-track {
+      position: absolute;
+      bottom: 16px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+    }
+
+    .portrait-fill {
+      position: absolute;
+      bottom: 16px;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #f45866, #ff7b87);
+      border-radius: 2px;
+      transition: width 0.8s ease-out;
+    }
+
+    .portrait-fill::after {
+      content: 'YOU';
+      position: absolute;
+      right: -4px;
+      bottom: 10px;
+      font-size: 0.55rem;
+      font-weight: 600;
+      color: #f45866;
+      letter-spacing: 0.05em;
+    }
+
+    .portrait-marker {
+      position: absolute;
+      bottom: 24px;
+      transform: translateX(-50%);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .portrait-marker:hover {
+      transform: translateX(-50%) scale(1.1);
+    }
+
+    .portrait-marker img {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: top;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: all 0.2s;
+    }
+
+    .portrait-marker:hover img {
+      border-color: rgba(244,88,102,0.6);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(244,88,102,0.3);
+    }
+
+    .portrait-marker.passed img {
+      border-color: rgba(244,88,102,0.5);
+      box-shadow: 0 2px 8px rgba(244,88,102,0.2);
+    }
+
+    .portrait-marker .marker-label {
+      display: block;
+      font-size: 0.55rem;
+      color: #5a5a6e;
+      margin-top: 4px;
+      white-space: nowrap;
+    }
+
+    .portrait-marker .marker-wpm {
+      display: block;
+      font-size: 0.5rem;
+      color: #4a4a5a;
+    }
+
+    .portrait-marker:hover .marker-label {
+      color: #8a8a9e;
+    }
+
+    .source-link {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 0.65rem;
+      color: #3a3a4a;
+      line-height: 1.8;
+    }
+
+    .source-link a {
+      color: #5a5a6a;
+      text-decoration: none;
+    }
+
+    .source-link a:hover {
+      color: #f45866;
+      text-decoration: underline;
+    }
+
+    /* Summary */
+    .summary-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .summary-section h4 {
+      font-size: 0.7rem;
+      color: #5a5a6e;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .summary-item {
+      text-align: center;
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+    }
+
+    .summary-item .speed {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #e8e8ed;
+      margin-bottom: 4px;
+    }
+
+    .summary-item .result {
+      font-size: 0.8rem;
+      color: #5a5a6e;
+    }
+
+    .summary-item .result.good {
+      color: #4caf50;
+    }
+
+    .summary-item .result.ok {
+      color: #f4bc42;
+    }
+
+    .summary-item .result.poor {
+      color: #f44336;
+    }
+
+    @media (max-width: 700px) {
+      .test-grid, .summary-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .word-display {
+        font-size: 3rem;
+      }
+
+      .intro-card, .results-card {
+        padding: 32px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="index.html" class="back-link">&larr; Back to Reader</a>
+      <h1>Comprehension Test</h1>
+      <div class="header-spacer"></div>
+    </header>
+
+    <div class="test-selection">
+      <h2>Find Your Optimal Speed</h2>
+      <p>Take these 5 tests to discover how fast you can read with full comprehension</p>
+
+      <div class="test-grid" id="testGrid">
+        <div class="test-btn active" data-test="0">
+          <span class="test-num">Test 1</span>
+          <span class="test-speed">200</span>
+          <span class="test-unit">WPM</span>
+          <span class="test-score" id="score0"></span>
+        </div>
+        <div class="test-btn" data-test="1">
+          <span class="test-num">Test 2</span>
+          <span class="test-speed">350</span>
+          <span class="test-unit">WPM</span>
+          <span class="test-score" id="score1"></span>
+        </div>
+        <div class="test-btn" data-test="2">
+          <span class="test-num">Test 3</span>
+          <span class="test-speed">500</span>
+          <span class="test-unit">WPM</span>
+          <span class="test-score" id="score2"></span>
+        </div>
+        <div class="test-btn" data-test="3">
+          <span class="test-num">Test 4</span>
+          <span class="test-speed">650</span>
+          <span class="test-unit">WPM</span>
+          <span class="test-score" id="score3"></span>
+        </div>
+        <div class="test-btn" data-test="4">
+          <span class="test-num">Test 5</span>
+          <span class="test-speed">800</span>
+          <span class="test-unit">WPM</span>
+          <span class="test-score" id="score4"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intro Stage -->
+    <div class="stage active" id="introStage">
+      <div class="intro-card">
+        <div class="test-label" id="introLabel">Test 1</div>
+        <h3 id="introTitle">Baseline</h3>
+        <div class="wpm-badge" id="introBadge">200 WPM</div>
+        <p>A short passage will appear one word at a time. Focus on the red letter and let the words flow past. Afterward, you'll answer 3 quick questions.</p>
+        <button class="start-btn" id="startBtn">Start Reading</button>
+      </div>
+    </div>
+
+    <!-- Reading Stage -->
+    <div class="stage" id="readingStage">
+      <div class="reading-area">
+        <div class="focus-line"></div>
+        <div class="word-display" id="wordDisplay">
+          <div class="word-inner" id="wordInner">
+            <span class="before"></span><span class="orp"></span><span class="after"></span>
+          </div>
+        </div>
+        <div class="reading-info">
+          <span id="wordProgress">0 / 0</span>
+          <span id="currentWpm">200 WPM</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz Stage -->
+    <div class="stage" id="quizStage">
+      <div class="quiz-container">
+        <div class="quiz-header">
+          <h3>Comprehension Check</h3>
+          <p>Answer these questions about what you just read</p>
+        </div>
+        <div id="questionsContainer"></div>
+        <button class="submit-btn" id="submitBtn" disabled>Check Answers</button>
+      </div>
+    </div>
+
+    <!-- Results Stage -->
+    <div class="stage" id="resultsStage">
+      <div class="results-container">
+        <div class="results-card">
+          <div class="score-circle" id="scoreCircle">
+            <span class="score-num" id="scoreNum">0/3</span>
+            <span class="score-label">Correct</span>
+          </div>
+          <p class="verdict" id="verdict"></p>
+
+          <div class="comparison-section" id="comparisonSection">
+            <div class="comparison-label">At <span id="comparisonWpm">200</span> WPM, you read faster than:</div>
+
+            <!-- Visual Portrait Progress Bar -->
+            <div class="portrait-bar" id="portraitBar">
+              <div class="portrait-track"></div>
+              <div class="portrait-fill" id="portraitFill"></div>
+              <!-- Portraits added dynamically -->
+            </div>
+
+            <div class="famous-comparison" id="famousComparison"></div>
+            <div class="source-link">
+              Sources: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0749596X19300786" target="_blank">Brysbaert 2019</a> ·
+              <a href="https://irisreading.com/famous-speed-readers/" target="_blank">Iris Reading</a> ·
+              <a href="https://speechify.com/blog/how-to-read-faster/" target="_blank">Speechify</a> ·
+              <a href="https://www.sparxservices.org/blog/us-literacy-statistics-literacy-rate-average-reading-level" target="_blank">US Literacy Stats</a>
+            </div>
+          </div>
+
+          <div class="results-actions">
+            <button class="btn-secondary" id="retryBtn">Try Again</button>
+            <button class="btn-primary" id="nextBtn">Next Test</button>
+          </div>
+          <a href="#" class="share-btn" id="shareBtn" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Share on X
+          </a>
+        </div>
+
+        <div class="summary-section" id="summarySection" style="display: none;">
+          <h4>Your Results</h4>
+          <div class="summary-grid" id="summaryGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Passages sized for ~30 seconds at each speed:
+    // 200 WPM × 0.5 min = 100 words
+    // 350 WPM × 0.5 min = 175 words
+    // 500 WPM × 0.5 min = 250 words
+    // 650 WPM × 0.5 min = 325 words
+    // 800 WPM × 0.5 min = 400 words
+
+    const tests = [
+      {
+        id: 0,
+        label: "Test 1",
+        title: "Baseline",
+        wpm: 200,
+        passage: "The octopus is one of the most intelligent creatures in the ocean. Scientists have observed them solving puzzles and using tools. They have three hearts and blue blood. Two hearts pump blood to the gills while the third pumps it to the body. When swimming, the heart that delivers blood to the body stops beating. This is why octopuses prefer crawling to swimming whenever possible.",
+        questions: [
+          { text: "How many hearts does an octopus have?", options: ["Two", "Three", "Four", "One"], correct: 1 },
+          { text: "What color is octopus blood?", options: ["Red", "Green", "Blue", "Clear"], correct: 2 },
+          { text: "Why do octopuses prefer crawling?", options: ["They are faster", "Swimming stops one heart", "Better grip", "Water pressure"], correct: 1 }
+        ]
+      },
+      {
+        id: 1,
+        label: "Test 2",
+        title: "Building Speed",
+        wpm: 350,
+        passage: "Coffee was discovered in Ethiopia around the 9th century when a goat herder named Kaldi noticed his goats becoming energetic after eating certain berries. The beans were brought to Yemen where Sufi monks used them to stay awake during prayers. By the 16th century, coffee had spread throughout the Middle East and Europe. The first coffeehouse opened in Venice in 1645. Today, over 2 billion cups of coffee are consumed daily worldwide, making it the second most traded commodity after oil. Finland drinks the most coffee per person.",
+        questions: [
+          { text: "Who discovered coffee?", options: ["A Yemeni monk", "An Ethiopian goat herder", "A Venetian merchant", "A European traveler"], correct: 1 },
+          { text: "Why did Sufi monks use coffee?", options: ["For trading", "To stay awake during prayers", "To feed animals", "For medicine"], correct: 1 },
+          { text: "What's traded more than coffee?", options: ["Gold", "Tea", "Oil", "Wheat"], correct: 2 }
+        ]
+      },
+      {
+        id: 2,
+        label: "Test 3",
+        title: "Intermediate",
+        wpm: 500,
+        passage: "The human brain consumes about 20 percent of the body's total energy despite being only 2 percent of body weight. During sleep, the brain clears out toxins through a system called the glymphatic system. Dreams occur primarily during REM sleep, and the average person has four to six dreams per night, though most are forgotten within minutes. The brain processes information at different speeds. Conscious thought is relatively slow, but the unconscious mind can process around 11 million bits of information per second. This explains why we can catch a ball without consciously calculating its path. Our brain size tripled over the past 7 million years of evolution.",
+        questions: [
+          { text: "What percentage of energy does the brain use?", options: ["2 percent", "10 percent", "20 percent", "50 percent"], correct: 2 },
+          { text: "What clears toxins from the brain during sleep?", options: ["Lymphatic system", "Glymphatic system", "Nervous system", "Circulatory system"], correct: 1 },
+          { text: "How many bits per second can the unconscious process?", options: ["11 thousand", "11 million", "11 billion", "1 million"], correct: 1 }
+        ]
+      },
+      {
+        id: 3,
+        label: "Test 4",
+        title: "Advanced",
+        wpm: 650,
+        passage: "Honey never spoils. Archaeologists have found 3000-year-old honey in Egyptian tombs that was still perfectly edible. This remarkable preservation comes from honey's unique chemistry. Its low moisture content and acidic pH create an inhospitable environment for bacteria. Bees add an enzyme called glucose oxidase that produces hydrogen peroxide when honey is diluted. Ancient Egyptians used honey as food, wound dressing, and embalming fluid. Modern research has validated these practices, showing honey's antibacterial properties work against drug-resistant bacteria. A single bee produces only one twelfth of a teaspoon of honey in its entire lifetime. To make one pound of honey, bees must visit approximately two million flowers and fly over 55,000 miles. Honey is the only food that includes all substances necessary to sustain life.",
+        questions: [
+          { text: "How old was the edible honey found in tombs?", options: ["1000 years", "2000 years", "3000 years", "5000 years"], correct: 2 },
+          { text: "What enzyme do bees add to honey?", options: ["Amylase", "Glucose oxidase", "Lipase", "Protease"], correct: 1 },
+          { text: "What did Egyptians use honey for besides food?", options: ["Currency", "Wound dressing and embalming", "Building", "Ceremonies only"], correct: 1 }
+        ]
+      },
+      {
+        id: 4,
+        label: "Test 5",
+        title: "Expert",
+        wpm: 800,
+        passage: "Quantum entanglement is a phenomenon where two particles become connected so that measuring one instantly affects the other, regardless of distance. Einstein called this spooky action at a distance and believed it proved quantum mechanics was incomplete. However, experiments have consistently confirmed entanglement is real. In 2022, the Nobel Prize in Physics was awarded for experiments proving entangled particles violate Bell inequalities, ruling out local hidden variables. Scientists now use entanglement for quantum computing and theoretically unhackable communication. The Chinese satellite Micius demonstrated quantum key distribution over 1200 kilometers. Unlike classical bits which are either 0 or 1, quantum bits can exist in multiple states simultaneously through superposition. This allows quantum computers to process exponentially more calculations than traditional computers. Google claimed quantum supremacy in 2019 when their processor completed a calculation in 200 seconds that would take classical supercomputers 10,000 years.",
+        questions: [
+          { text: "What did Einstein call quantum entanglement?", options: ["Quantum magic", "Spooky action at a distance", "Particle telepathy", "Uncertainty principle"], correct: 1 },
+          { text: "What did the 2022 Nobel experiments prove?", options: ["Faster than light travel", "Particles violate Bell inequalities", "Entanglement doesn't exist", "Only works at short distances"], correct: 1 },
+          { text: "What did China's Micius satellite demonstrate?", options: ["Faster-than-light communication", "Quantum key distribution over 1200km", "Teleportation", "Creating new particles"], correct: 1 }
+        ]
+      }
+    ];
+
+    // State
+    let currentTest = 0;
+    let testWords = [];
+    let wordIndex = 0;
+    let userAnswers = [];
+    let scores = JSON.parse(localStorage.getItem('speedReaderScores') || '[null,null,null,null,null]');
+
+    // DOM Elements
+    const testGrid = document.getElementById('testGrid');
+    const introStage = document.getElementById('introStage');
+    const readingStage = document.getElementById('readingStage');
+    const quizStage = document.getElementById('quizStage');
+    const resultsStage = document.getElementById('resultsStage');
+    const wordDisplay = document.getElementById('wordDisplay');
+    const wordInner = document.getElementById('wordInner');
+    const progressFill = document.getElementById('progressFill');
+    const wordProgress = document.getElementById('wordProgress');
+    const currentWpmEl = document.getElementById('currentWpm');
+    const questionsContainer = document.getElementById('questionsContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    const startBtn = document.getElementById('startBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const shareBtn = document.getElementById('shareBtn');
+
+    // Initialize scores display
+    scores.forEach((score, i) => {
+      if (score !== null) {
+        document.getElementById(`score${i}`).textContent = `${score}/3`;
+        testGrid.children[i].classList.add('completed');
+      }
+    });
+
+    // ORP calculation
+    function getOrpIndex(word) {
+      if (word.length <= 1) return 0;
+      if (word.length <= 3) return 1;
+      return Math.floor(word.length * 0.28);
+    }
+
+    function displayWord(word) {
+      if (!word) {
+        wordInner.innerHTML = '<span class="before"></span><span class="orp"></span><span class="after"></span>';
+        wordInner.style.left = '50%';
+        wordInner.style.transform = 'translateX(-50%) translateY(-50%)';
+        wordInner.style.top = '50%';
+        return;
+      }
+
+      const orpIndex = getOrpIndex(word);
+      const before = word.slice(0, orpIndex);
+      const orp = word[orpIndex];
+      const after = word.slice(orpIndex + 1);
+
+      wordInner.innerHTML = `<span class="before">${before}</span><span class="orp">${orp}</span><span class="after">${after}</span>`;
+
+      const orpEl = wordInner.querySelector('.orp');
+      const containerWidth = wordDisplay.offsetWidth;
+      const containerCenter = containerWidth / 2;
+
+      const orpRect = orpEl.getBoundingClientRect();
+      const innerRect = wordInner.getBoundingClientRect();
+      const orpCenterInWord = (orpRect.left - innerRect.left) + (orpRect.width / 2);
+
+      const leftOffset = containerCenter - orpCenterInWord;
+      wordInner.style.left = leftOffset + 'px';
+      wordInner.style.transform = 'translateY(-50%)';
+      wordInner.style.top = '50%';
+    }
+
+    // Stage management
+    function showStage(stage) {
+      [introStage, readingStage, quizStage, resultsStage].forEach(s => s.classList.remove('active'));
+      stage.classList.add('active');
+    }
+
+    // Select test
+    function selectTest(index) {
+      currentTest = index;
+      const test = tests[index];
+
+      testGrid.querySelectorAll('.test-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+
+      document.getElementById('introLabel').textContent = test.label;
+      document.getElementById('introTitle').textContent = test.title;
+      document.getElementById('introBadge').textContent = test.wpm + ' WPM';
+      currentWpmEl.textContent = test.wpm + ' WPM';
+
+      showStage(introStage);
+    }
+
+    testGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('.test-btn');
+      if (btn) selectTest(parseInt(btn.dataset.test));
+    });
+
+    // Start reading
+    startBtn.addEventListener('click', () => {
+      const test = tests[currentTest];
+      testWords = test.passage.split(/\s+/);
+      wordIndex = 0;
+      userAnswers = [null, null, null];
+
+      showStage(readingStage);
+      setTimeout(readNextWord, 500);
+    });
+
+    function readNextWord() {
+      if (wordIndex >= testWords.length) {
+        displayWord('');
+        setTimeout(() => showQuiz(), 300);
+        return;
+      }
+
+      displayWord(testWords[wordIndex]);
+      wordProgress.textContent = `${wordIndex + 1} / ${testWords.length}`;
+      progressFill.style.width = ((wordIndex + 1) / testWords.length * 100) + '%';
+      wordIndex++;
+
+      const delay = 60000 / tests[currentTest].wpm;
+      setTimeout(readNextWord, delay);
+    }
+
+    // Quiz
+    function showQuiz() {
+      showStage(quizStage);
+
+      const test = tests[currentTest];
+      questionsContainer.innerHTML = '';
+
+      test.questions.forEach((q, qIndex) => {
+        const html = `
+          <div class="question-card" data-question="${qIndex}">
+            <div class="q-num">Question ${qIndex + 1}</div>
+            <div class="q-text">${q.text}</div>
+            <div class="answer-options">
+              ${q.options.map((opt, i) => `
+                <label class="answer-option" data-option="${i}">
+                  <span class="radio"></span>
+                  <span>${opt}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        questionsContainer.innerHTML += html;
+      });
+
+      questionsContainer.querySelectorAll('.answer-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const card = opt.closest('.question-card');
+          const qIndex = parseInt(card.dataset.question);
+          const optIndex = parseInt(opt.dataset.option);
+
+          card.querySelectorAll('.answer-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          userAnswers[qIndex] = optIndex;
+
+          submitBtn.disabled = !userAnswers.every(a => a !== null);
+        });
+      });
+
+      submitBtn.disabled = true;
+    }
+
+    // Submit quiz
+    submitBtn.addEventListener('click', () => {
+      const test = tests[currentTest];
+      let correct = 0;
+
+      test.questions.forEach((q, qIndex) => {
+        const card = questionsContainer.querySelector(`[data-question="${qIndex}"]`);
+        card.querySelectorAll('.answer-option').forEach((opt, i) => {
+          if (i === q.correct) opt.classList.add('correct');
+          if (userAnswers[qIndex] === i && i !== q.correct) opt.classList.add('incorrect');
+        });
+        if (userAnswers[qIndex] === q.correct) correct++;
+      });
+
+      setTimeout(() => showResults(correct), 1200);
+    });
+
+    // Results
+    function showResults(correct) {
+      showStage(resultsStage);
+
+      scores[currentTest] = correct;
+      localStorage.setItem('speedReaderScores', JSON.stringify(scores));
+
+      const scoreEl = document.getElementById(`score${currentTest}`);
+      scoreEl.textContent = `${correct}/3`;
+      testGrid.children[currentTest].classList.add('completed');
+
+      const scoreCircle = document.getElementById('scoreCircle');
+      scoreCircle.className = 'score-circle';
+      if (correct === 3) scoreCircle.classList.add('perfect');
+      else if (correct >= 2) scoreCircle.classList.add('good');
+      else scoreCircle.classList.add('poor');
+
+      document.getElementById('scoreNum').textContent = `${correct}/3`;
+
+      const test = tests[currentTest];
+      let verdict = '';
+      if (correct === 3) {
+        verdict = `Excellent! You comprehended everything at ${test.wpm} WPM. Ready for a faster challenge?`;
+      } else if (correct === 2) {
+        verdict = `Good job! You got most of it at ${test.wpm} WPM. This might be near your optimal speed.`;
+      } else if (correct === 1) {
+        verdict = `You might be reading too fast at ${test.wpm} WPM. Consider slowing down for better comprehension.`;
+      } else {
+        verdict = `${test.wpm} WPM seems too fast for full comprehension. Try a slower speed first.`;
+      }
+      document.getElementById('verdict').textContent = verdict;
+
+      nextBtn.style.display = currentTest < 4 ? 'inline-block' : 'none';
+
+      // Generate share link
+      const scoreEmoji = correct === 3 ? '🎯' : correct === 2 ? '✅' : '📖';
+      let speedContext = '';
+      if (test.wpm >= 700) speedContext = " — faster than 95% of readers!";
+      else if (test.wpm >= 500) speedContext = " — speed reader level!";
+      else if (test.wpm >= 350) speedContext = " — above average!";
+      const shareText = `${scoreEmoji} I scored ${correct}/3 comprehension at ${test.wpm} WPM${speedContext}\n\nTest your reading speed ⚡`;
+      shareBtn.href = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+
+      // Update comparison section
+      updateComparison(test.wpm);
+
+      // Show summary if multiple tests completed
+      const completedCount = scores.filter(s => s !== null).length;
+      const summarySection = document.getElementById('summarySection');
+      if (completedCount > 1) {
+        summarySection.style.display = 'block';
+        const summaryGrid = document.getElementById('summaryGrid');
+        summaryGrid.innerHTML = tests.map((t, i) => {
+          const score = scores[i];
+          let resultClass = '';
+          let resultText = '--';
+          if (score !== null) {
+            resultText = `${score}/3`;
+            if (score === 3) resultClass = 'good';
+            else if (score >= 2) resultClass = 'ok';
+            else resultClass = 'poor';
+          }
+          return `
+            <div class="summary-item">
+              <div class="speed">${t.wpm}</div>
+              <div class="result ${resultClass}">${resultText}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    retryBtn.addEventListener('click', () => selectTest(currentTest));
+    nextBtn.addEventListener('click', () => {
+      if (currentTest < 4) selectTest(currentTest + 1);
+    });
+
+    // Portrait markers for visual progress bar
+    // Note: Warren Buffett and Jimmy Carter both read at ~2000 WPM
+    // Offsetting Jimmy Carter slightly (2200) to prevent overlap on bar
+    const portraitPeople = [
+      { name: 'Tom Cruise', wpm: 180, img: 'images/tom-cruise.jpg', realWpm: 180 },
+      { name: 'Bill Gates', wpm: 750, img: 'images/bill-gates.jpg', realWpm: 750 },
+      { name: 'JFK', wpm: 1200, img: 'images/jfk.jpg', realWpm: 1200 },
+      { name: 'W. Buffett', wpm: 1800, img: 'images/warren-buffett.jpg', realWpm: 2000 },
+      { name: 'J. Carter', wpm: 2200, img: 'images/jimmy-carter.jpg', realWpm: 2000 },
+      { name: 'Anne Jones', wpm: 4251, img: 'images/anne-jones.jpg', realWpm: 4251 }
+    ];
+
+    // Convert WPM to position (0-100%) using log scale
+    function wpmToPosition(wpm) {
+      const minWpm = 100;
+      const maxWpm = 5000;
+      const logMin = Math.log(minWpm);
+      const logMax = Math.log(maxWpm);
+      const logWpm = Math.log(Math.max(minWpm, Math.min(maxWpm, wpm)));
+      return ((logWpm - logMin) / (logMax - logMin)) * 100;
+    }
+
+    // Render portrait markers
+    function renderPortraitBar() {
+      const bar = document.getElementById('portraitBar');
+      // Clear existing markers (keep track and fill)
+      bar.querySelectorAll('.portrait-marker').forEach(m => m.remove());
+
+      portraitPeople.forEach(p => {
+        const pos = wpmToPosition(p.wpm); // Use display position
+        const displayWpm = p.realWpm || p.wpm; // Show actual WPM
+        const marker = document.createElement('div');
+        marker.className = 'portrait-marker';
+        marker.style.left = pos + '%';
+        marker.dataset.realWpm = displayWpm;
+        marker.innerHTML = `
+          <img src="${p.img}" alt="${p.name}">
+          <span class="marker-label">${p.name}</span>
+          <span class="marker-wpm">${displayWpm} WPM</span>
+        `;
+        bar.appendChild(marker);
+      });
+    }
+
+    // Reading speed benchmarks (all sourced)
+    // Sources cited at bottom of comparison section
+    const speedBenchmarks = [
+      // Slower readers - context matters!
+      { name: '54% of US adults', wpm: 150, desc: 'Read below 6th grade level', source: 'sparxservices.org' },
+      { name: 'Tom Cruise (dyslexic)', wpm: 180, desc: 'Struggled until adulthood', source: 'readandspell.com' },
+      // Average
+      { name: 'Average adult', wpm: 238, desc: 'Brysbaert 2019 meta-analysis', source: 'sciencedirect.com' },
+      { name: 'College student', wpm: 300, desc: 'Typical educated adult', source: 'scholarwithin.com' },
+      // Good readers
+      { name: 'Good reader', wpm: 350, desc: 'Fry 1963 research', source: 'Fry 1963' },
+      { name: 'Avid reader', wpm: 450, desc: 'Reduced subvocalization', source: 'irisreading.com' },
+      // Famous fast readers
+      { name: 'Bill Gates', wpm: 750, desc: 'Reads 50 books/year', source: 'speechify.com' },
+      { name: 'JFK', wpm: 1200, desc: 'Johns Hopkins speed reading course', source: 'jfklibrary.org' },
+      { name: 'Warren Buffett', wpm: 2000, desc: 'Reads 5-6 hours daily', source: 'various' },
+      { name: 'Jimmy Carter', wpm: 2000, desc: 'Documented speed reader', source: 'irisreading.com' },
+      { name: 'Anne Jones', wpm: 4251, desc: '6x World Champion', source: 'spdrdng.com' }
+    ];
+
+    // Famous people with dyslexia (for context on slower reading)
+    const dyslexicCelebs = [
+      'Tom Cruise', 'Steven Spielberg', 'Richard Branson',
+      'Keira Knightley', 'Whoopi Goldberg', 'Charles Schwab'
+    ];
+
+    function updateComparison(wpm) {
+      document.getElementById('comparisonWpm').textContent = wpm;
+
+      // Render portrait bar and update fill position
+      renderPortraitBar();
+      const userPos = wpmToPosition(wpm);
+      document.getElementById('portraitFill').style.width = userPos + '%';
+
+      // Mark portraits that user has passed
+      document.querySelectorAll('.portrait-marker').forEach(marker => {
+        const markerWpm = parseInt(marker.dataset.realWpm);
+        if (wpm >= markerWpm) {
+          marker.classList.add('passed');
+        }
+      });
+
+      // Find the highest benchmark they match or exceed
+      let comparison = '';
+      for (let i = speedBenchmarks.length - 1; i >= 0; i--) {
+        if (wpm >= speedBenchmarks[i].wpm) {
+          const b = speedBenchmarks[i];
+          if (b.name.includes('Anne Jones')) {
+            comparison = `🏆 <strong>World Champion level!</strong> You match ${b.name}`;
+          } else if (b.name.includes('Warren') || b.name.includes('Jimmy')) {
+            comparison = `Reading like <strong>${b.name}</strong> — ${b.desc}`;
+          } else if (b.name.includes('JFK') || b.name.includes('Bill Gates')) {
+            comparison = `As fast as <strong>${b.name}</strong>! (${b.desc})`;
+          } else if (i >= 4) {
+            comparison = `<strong>${b.name}</strong> level — ${b.desc}`;
+          } else {
+            comparison = `Faster than <strong>${b.name}</strong> (${b.wpm} WPM)`;
+          }
+          break;
+        }
+      }
+
+      if (!comparison) {
+        comparison = 'Keep practicing! Average adult reads at 238 WPM.';
+      }
+
+      document.getElementById('famousComparison').innerHTML = comparison;
+    }
+
+    // Initialize
+    selectTest(0);
+  </script>
+</body>
+</html>
