@@ -786,8 +786,8 @@
         <button id="playBtn" class="primary">Play</button>
         <button id="pauseBtn">Pause</button>
         <button id="resetBtn">Reset</button>
-        <button id="theaterBtn" class="icon-btn" title="Theater Mode">Full Screen</button>
-        <button id="exportBtn" class="export-btn" title="Export to Video">Export Video</button>
+        <button id="theaterBtn" class="icon-btn" title="Focus Mode">Focus Mode</button>
+        <button id="exportBtn" class="export-btn" title="Export as Video for X">Export as Video</button>
       </div>
 
       <div class="control-row">
@@ -914,8 +914,8 @@
     </div>
   </div>
 
-  <!-- Export Canvas (hidden) -->
-  <canvas id="exportCanvas" class="export-canvas" width="1920" height="1080"></canvas>
+  <!-- Export Canvas (hidden) - 9:16 vertical for X/Twitter -->
+  <canvas id="exportCanvas" class="export-canvas" width="1080" height="1920"></canvas>
 
   <!-- Theater Mode -->
   <div class="theater-mode" id="theaterMode">
@@ -1248,10 +1248,14 @@
       return Math.floor(word.length * 0.28);
     }
 
-    function drawWordToCanvas(word, currentWpmVal) {
+    function drawWordToCanvas(word, currentWpmVal, progressPct) {
+      // Canvas is 1080x1920 (9:16 vertical for X)
+      const W = 1080;
+      const H = 1920;
+
       // Dark background
       ctx.fillStyle = '#0d0d0f';
-      ctx.fillRect(0, 0, 1920, 1080);
+      ctx.fillRect(0, 0, W, H);
 
       if (!word) return;
 
@@ -1260,8 +1264,8 @@
       const orp = word[orpIndex] || '';
       const after = word.slice(orpIndex + 1);
 
-      // Set font
-      ctx.font = '120px Newsreader, Georgia, serif';
+      // Set font - slightly smaller for vertical
+      ctx.font = '90px Newsreader, Georgia, serif';
       ctx.textBaseline = 'middle';
 
       // Measure parts
@@ -1269,16 +1273,16 @@
       const orpWidth = ctx.measureText(orp).width;
 
       // Center ORP letter
-      const centerX = 960;
-      const centerY = 540;
+      const centerX = W / 2;
+      const centerY = H / 2;
       const startX = centerX - beforeWidth - (orpWidth / 2);
 
       // Draw focus line
       ctx.strokeStyle = 'rgba(244,88,102,0.3)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(centerX, centerY - 100);
-      ctx.lineTo(centerX, centerY + 100);
+      ctx.moveTo(centerX, centerY - 80);
+      ctx.lineTo(centerX, centerY + 80);
       ctx.stroke();
 
       // Draw before (white)
@@ -1293,11 +1297,20 @@
       ctx.fillStyle = 'rgba(255,255,255,0.5)';
       ctx.fillText(after, startX + beforeWidth + orpWidth, centerY);
 
-      // Draw WPM indicator
-      ctx.font = '24px Inter, sans-serif';
+      // Draw WPM indicator at bottom
+      ctx.font = '32px Inter, sans-serif';
       ctx.fillStyle = '#5a5a6e';
-      ctx.textAlign = 'right';
-      ctx.fillText(currentWpmVal + ' WPM', 1880, 1040);
+      ctx.textAlign = 'center';
+      ctx.fillText(currentWpmVal + ' WPM', centerX, H - 120);
+
+      // Draw progress bar at bottom
+      if (progressPct !== undefined) {
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fillRect(100, H - 60, W - 200, 8);
+        ctx.fillStyle = '#f45866';
+        ctx.fillRect(100, H - 60, (W - 200) * (progressPct / 100), 8);
+      }
+
       ctx.textAlign = 'left';
     }
 
@@ -1310,15 +1323,39 @@
         return;
       }
 
+      // Calculate estimated duration
+      const exportRampMode = rampMode;
+      const exportWpm = wpm;
+      const totalWords = words.length;
+      let estSeconds;
+      if (exportRampMode) {
+        // Average WPM in ramp mode is (300+900)/2 = 600
+        estSeconds = (totalWords / 600) * 60;
+      } else {
+        estSeconds = (totalWords / exportWpm) * 60;
+      }
+
+      // X/Twitter limit is 2:20 (140 seconds) for regular accounts
+      if (estSeconds > 140) {
+        const mins = Math.floor(estSeconds / 60);
+        const secs = Math.round(estSeconds % 60);
+        const proceed = confirm(
+          `Video will be ~${mins}:${secs.toString().padStart(2, '0')} long.\n\n` +
+          `X (Twitter) limit is 2:20 for regular accounts.\n\n` +
+          `Consider using fewer words or faster speed.\n\nExport anyway?`
+        );
+        if (!proceed) return;
+      }
+
       isExporting = true;
       exportBtn.classList.add('recording');
       exportBtn.textContent = 'Recording...';
 
-      // Setup MediaRecorder
-      const stream = exportCanvas.captureStream(60);
+      // Setup MediaRecorder - 9:16 vertical optimized for X
+      const stream = exportCanvas.captureStream(30);
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'video/webm;codecs=vp9',
-        videoBitsPerSecond: 8000000
+        videoBitsPerSecond: 5000000
       });
 
       const chunks = [];
@@ -1328,22 +1365,18 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'speed-reader-export.webm';
+        a.download = 'speed-reader-for-x.webm';
         a.click();
         URL.revokeObjectURL(url);
 
         isExporting = false;
         exportBtn.classList.remove('recording');
-        exportBtn.textContent = 'Export Video';
+        exportBtn.textContent = 'Export as Video';
       };
 
       mediaRecorder.start();
 
       // Render each word
-      const exportRampMode = rampMode;
-      const exportWpm = wpm;
-      const totalWords = words.length;
-
       for (let i = 0; i < totalWords; i++) {
         if (!isExporting) break;
 
@@ -1355,10 +1388,10 @@
           currentWpmVal = exportWpm;
         }
 
-        drawWordToCanvas(words[i], currentWpmVal);
+        const pct = Math.round(((i + 1) / totalWords) * 100);
+        drawWordToCanvas(words[i], currentWpmVal, pct);
 
         // Update button with progress
-        const pct = Math.round(((i + 1) / totalWords) * 100);
         exportBtn.textContent = `Recording ${pct}%`;
 
         // Wait for frame duration
@@ -1367,7 +1400,7 @@
       }
 
       // Final frame
-      drawWordToCanvas('Done!', rampMode ? RAMP_END : wpm);
+      drawWordToCanvas('Done!', rampMode ? RAMP_END : wpm, 100);
       await new Promise(r => setTimeout(r, 1000));
 
       mediaRecorder.stop();
