@@ -1296,15 +1296,14 @@
     });
 
     // Portrait markers for visual progress bar
-    // Note: Warren Buffett and Jimmy Carter both read at ~2000 WPM
-    // Offsetting Jimmy Carter slightly (2200) to prevent overlap on bar
     const portraitPeople = [
       { name: 'Tom Cruise', wpm: 180, img: 'images/tom-cruise.jpg', realWpm: 180 },
+      { name: 'Steph Curry', wpm: 350, img: 'images/steph-curry.jpg', realWpm: 350 },
+      { name: 'Trump', wpm: 400, img: 'images/donald-trump.jpg', realWpm: 400 },
+      { name: 'Zuckerberg', wpm: 450, img: 'images/mark-zuckerberg.jpg', realWpm: 450 },
+      { name: 'Elon Musk', wpm: 500, img: 'images/elon-musk.jpg', realWpm: 500 },
       { name: 'Bill Gates', wpm: 750, img: 'images/bill-gates.jpg', realWpm: 750 },
-      { name: 'JFK', wpm: 1200, img: 'images/jfk.jpg', realWpm: 1200 },
-      { name: 'W. Buffett', wpm: 1800, img: 'images/warren-buffett.jpg', realWpm: 2000 },
-      { name: 'J. Carter', wpm: 2200, img: 'images/jimmy-carter.jpg', realWpm: 2000 },
-      { name: 'Anne Jones', wpm: 4251, img: 'images/anne-jones.jpg', realWpm: 4251 }
+      { name: 'JFK', wpm: 1200, img: 'images/jfk.jpg', realWpm: 1200 }
     ];
 
     // Convert WPM to position (0-100%) using log scale
