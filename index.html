@@ -1297,18 +1297,25 @@
       ctx.fillStyle = 'rgba(255,255,255,0.5)';
       ctx.fillText(after, startX + beforeWidth + orpWidth, centerY);
 
-      // Draw WPM indicator at bottom
-      ctx.font = '32px Inter, sans-serif';
-      ctx.fillStyle = '#5a5a6e';
+      // Draw WPM indicator - large and prominent
+      ctx.font = 'bold 72px Inter, sans-serif';
+      ctx.fillStyle = '#f45866';
       ctx.textAlign = 'center';
-      ctx.fillText(currentWpmVal + ' WPM', centerX, H - 120);
+      ctx.fillText(currentWpmVal, centerX, H - 200);
+      ctx.font = '28px Inter, sans-serif';
+      ctx.fillStyle = '#8a8a9e';
+      ctx.fillText('WORDS PER MINUTE', centerX, H - 140);
 
       // Draw progress bar at bottom
       if (progressPct !== undefined) {
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.fillRect(100, H - 60, W - 200, 8);
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.roundRect(80, H - 80, W - 160, 12, 6);
+        ctx.fill();
+        ctx.fillStyle = 'linear-gradient(90deg, #f45866, #ff7b87)';
         ctx.fillStyle = '#f45866';
-        ctx.fillRect(100, H - 60, (W - 200) * (progressPct / 100), 8);
+        ctx.beginPath();
+        ctx.roundRect(80, H - 80, (W - 160) * (progressPct / 100), 12, 6);
+        ctx.fill();
       }
 
       ctx.textAlign = 'left';
@@ -1351,11 +1358,11 @@
       exportBtn.classList.add('recording');
       exportBtn.textContent = 'Recording...';
 
-      // Setup MediaRecorder - 9:16 vertical optimized for X
-      const stream = exportCanvas.captureStream(30);
+      // Setup MediaRecorder - 9:16 vertical optimized for X, high quality
+      const stream = exportCanvas.captureStream(60);
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'video/webm;codecs=vp9',
-        videoBitsPerSecond: 5000000
+        videoBitsPerSecond: 15000000
       });
 
       const chunks = [];
