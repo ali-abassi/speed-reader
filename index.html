@@ -164,35 +164,18 @@
     }
 
     .controls {
-      padding: 16px 0 12px;
+      padding: 20px 0 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 16px;
     }
 
     .control-row {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-    }
-
-    .stats-row {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      color: #5a5a6e;
-    }
-
-    .stats-row .stat span {
-      color: #8a8a9e;
-    }
-
-    .stats-row .stat-sep {
-      color: #3a3a4a;
     }
 
     button {
@@ -239,11 +222,19 @@
     .speed-control {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 16px;
+    }
+
+    .speed-control label {
+      color: #5a5a6e;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .speed-control input[type="range"] {
-      width: 100px;
+      width: 180px;
       height: 4px;
       -webkit-appearance: none;
       background: rgba(255,255,255,0.1);
@@ -253,19 +244,19 @@
 
     .speed-control input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       background: #f45866;
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(244,88,102,0.4);
+      box-shadow: 0 2px 8px rgba(244,88,102,0.4);
     }
 
     .speed-value {
       color: #f45866;
       font-weight: 500;
-      font-size: 0.8rem;
-      min-width: 55px;
+      font-size: 0.9rem;
+      min-width: 70px;
       font-variant-numeric: tabular-nums;
     }
 
@@ -320,6 +311,40 @@
 
     textarea::placeholder {
       color: #4a4a5a;
+    }
+
+    .stats {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      padding: 16px 0;
+      color: #5a5a6e;
+      font-size: 0.8rem;
+    }
+
+    .stat {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat span {
+      color: #8a8a9e;
+    }
+
+    .mode-toggle {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .mode-toggle button {
+      padding: 10px 20px;
+      font-size: 0.8rem;
+    }
+
+    .mode-toggle button.active {
+      background: rgba(244,88,102,0.15);
+      border-color: rgba(244,88,102,0.3);
+      color: #f45866;
     }
 
     /* Info sections */
@@ -729,19 +754,28 @@
     <div class="controls">
       <div class="control-row">
         <button id="playBtn" class="primary">Play</button>
+        <button id="pauseBtn">Pause</button>
         <button id="resetBtn">Reset</button>
+        <button id="theaterBtn" class="icon-btn" title="Theater Mode">Full Screen</button>
+      </div>
+
+      <div class="control-row">
         <div class="speed-control">
+          <label>Speed:</label>
           <input type="range" id="wpmSlider" min="100" max="1200" value="300" step="50">
           <span class="speed-value" id="wpmValue">300 wpm</span>
         </div>
-        <button id="theaterBtn" class="icon-btn" title="Full Screen">&#9974;</button>
       </div>
-      <div class="stats-row">
-        <span class="stat"><span id="wordCount">0</span> words</span>
-        <span class="stat-sep">&middot;</span>
-        <span class="stat"><span id="wordProgress">0/0</span></span>
-        <span class="stat-sep">&middot;</span>
-        <span class="stat"><span id="timeEstimate">0:00</span> left</span>
+
+      <div class="control-row mode-toggle">
+        <button id="modeFixed" class="active">Fixed Speed</button>
+        <button id="modeRamp">Ramp Up (300-900)</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat">Words: <span id="wordCount">0</span></div>
+        <div class="stat">Progress: <span id="wordProgress">0/0</span></div>
+        <div class="stat">Time: <span id="timeEstimate">0:00</span></div>
       </div>
     </div>
 
@@ -877,6 +911,7 @@
     const wordInner = document.getElementById('wordInner');
     const readerHint = document.getElementById('readerHint');
     const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
     const resetBtn = document.getElementById('resetBtn');
     const wpmSlider = document.getElementById('wpmSlider');
     const wpmValue = document.getElementById('wpmValue');
@@ -886,6 +921,8 @@
     const wordCount = document.getElementById('wordCount');
     const wordProgress = document.getElementById('wordProgress');
     const timeEstimate = document.getElementById('timeEstimate');
+    const modeFixed = document.getElementById('modeFixed');
+    const modeRamp = document.getElementById('modeRamp');
     const pasteBtn = document.getElementById('pasteBtn');
     const clearBtn = document.getElementById('clearBtn');
 
@@ -906,7 +943,10 @@
     let isPlaying = false;
     let timeoutId = null;
     let wpm = 300;
+    let rampMode = false;
     let isTheaterMode = false;
+    const RAMP_START = 300;
+    const RAMP_END = 900;
 
     // Calculate ORP position (about 25-30% into the word)
     function getOrpIndex(word) {
@@ -975,19 +1015,28 @@
       wordProgress.textContent = `${currentIndex}/${words.length}`;
 
       const remainingWords = words.length - currentIndex;
-      const minutes = remainingWords / wpm;
+      const currentWpmVal = rampMode ? getCurrentRampWpm() : wpm;
+      const minutes = remainingWords / currentWpmVal;
       const mins = Math.floor(minutes);
       const secs = Math.floor((minutes - mins) * 60);
       timeEstimate.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
+    function getCurrentRampWpm() {
+      if (!rampMode || words.length === 0) return wpm;
+      const progress = currentIndex / words.length;
+      return Math.round(RAMP_START + (RAMP_END - RAMP_START) * progress);
+    }
+
     function updateWpmDisplay() {
-      currentWpm.textContent = wpm;
-      theaterWpm.textContent = wpm;
+      const displayWpm = rampMode ? getCurrentRampWpm() : wpm;
+      currentWpm.textContent = displayWpm;
+      theaterWpm.textContent = displayWpm;
     }
 
     function getDelay() {
-      return 60000 / wpm;
+      const currentWpmVal = rampMode ? getCurrentRampWpm() : wpm;
+      return 60000 / currentWpmVal;
     }
 
     function showNextWord() {
@@ -1064,6 +1113,7 @@
 
     // Event listeners
     playBtn.addEventListener('click', () => isPlaying ? pause() : play());
+    pauseBtn.addEventListener('click', pause);
     resetBtn.addEventListener('click', reset);
     theaterPlayBtn.addEventListener('click', () => isPlaying ? pause() : play());
     theaterPauseBtn.addEventListener('click', pause);
@@ -1098,6 +1148,24 @@
       reset();
     });
 
+    modeFixed.addEventListener('click', () => {
+      rampMode = false;
+      modeFixed.classList.add('active');
+      modeRamp.classList.remove('active');
+      wpmSlider.disabled = false;
+      updateWpmDisplay();
+      updateProgress();
+    });
+
+    modeRamp.addEventListener('click', () => {
+      rampMode = true;
+      modeRamp.classList.add('active');
+      modeFixed.classList.remove('active');
+      wpmSlider.disabled = true;
+      updateWpmDisplay();
+      updateProgress();
+    });
+
     // Keyboard controls
     document.addEventListener('keydown', (e) => {
       if (e.target === textInput) return;
@@ -1108,16 +1176,20 @@
         else play();
       } else if (e.code === 'ArrowUp' || e.code === 'ArrowRight') {
         e.preventDefault();
-        wpm = Math.min(1200, wpm + 50);
-        wpmSlider.value = wpm;
-        wpmValue.textContent = wpm + ' wpm';
-        updateWpmDisplay();
+        if (!rampMode) {
+          wpm = Math.min(1200, wpm + 50);
+          wpmSlider.value = wpm;
+          wpmValue.textContent = wpm + ' wpm';
+          updateWpmDisplay();
+        }
       } else if (e.code === 'ArrowDown' || e.code === 'ArrowLeft') {
         e.preventDefault();
-        wpm = Math.max(100, wpm - 50);
-        wpmSlider.value = wpm;
-        wpmValue.textContent = wpm + ' wpm';
-        updateWpmDisplay();
+        if (!rampMode) {
+          wpm = Math.max(100, wpm - 50);
+          wpmSlider.value = wpm;
+          wpmValue.textContent = wpm + ' wpm';
+          updateWpmDisplay();
+        }
       } else if (e.code === 'KeyR') {
         e.preventDefault();
         reset();
