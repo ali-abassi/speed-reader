@@ -38,9 +38,23 @@
     h1 {
       font-size: 0.75rem;
       font-weight: 500;
-      color: #5a5a6e;
+      color: #f45866;
       text-transform: uppercase;
       letter-spacing: 0.15em;
+      margin-bottom: 12px;
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: #8a8a9e;
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .tagline strong {
+      color: #e8e8ed;
     }
 
     .reader-area {
@@ -56,6 +70,28 @@
       border-radius: 24px;
       border: 1px solid rgba(255,255,255,0.04);
       transition: all 0.3s ease;
+    }
+
+    .reader-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #3a3a4a;
+      font-size: 0.9rem;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .reader-hint.hidden {
+      opacity: 0;
+    }
+
+    .reader-hint .hint-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+      opacity: 0.5;
     }
 
     .word-display {
@@ -492,69 +528,145 @@
       opacity: 1;
     }
 
-    /* Test Link */
-    .test-link-section {
+    /* Test Section with Portraits */
+    .test-section {
       margin-top: 48px;
-      padding-top: 32px;
-      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 32px;
+      background: linear-gradient(135deg, rgba(244,88,102,0.08) 0%, rgba(255,123,135,0.04) 100%);
+      border: 1px solid rgba(244,88,102,0.15);
+      border-radius: 24px;
+      text-align: center;
     }
 
-    .test-link {
+    .test-section-header {
+      margin-bottom: 24px;
+    }
+
+    .test-section-title {
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: #e8e8ed;
+      margin-bottom: 8px;
+    }
+
+    .test-section-subtitle {
+      font-size: 0.9rem;
+      color: #8a8a9e;
+    }
+
+    /* Famous Readers Lineup */
+    .famous-lineup {
       display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 8px;
+      margin: 28px 0;
+      padding: 0 12px;
+    }
+
+    .famous-person {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 20px;
-      padding: 24px 28px;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px;
-      text-decoration: none;
+      opacity: 0.85;
       transition: all 0.2s;
     }
 
-    .test-link:hover {
-      background: rgba(255,255,255,0.04);
-      border-color: rgba(244,88,102,0.3);
-      transform: translateY(-2px);
+    .famous-person:hover {
+      opacity: 1;
+      transform: translateY(-4px);
     }
 
-    .test-link-icon {
-      font-size: 1.5rem;
-      background: rgba(244,88,102,0.15);
-      width: 48px;
-      height: 48px;
+    .famous-person img {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: top;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.2s;
+    }
+
+    .famous-person:hover img {
+      border-color: rgba(244,88,102,0.5);
+      box-shadow: 0 6px 20px rgba(244,88,102,0.25);
+    }
+
+    .famous-person .name {
+      font-size: 0.6rem;
+      color: #6a6a7e;
+      margin-top: 6px;
+      white-space: nowrap;
+    }
+
+    .famous-person .wpm {
+      font-size: 0.55rem;
+      color: #4a4a5a;
+    }
+
+    .famous-divider {
+      color: #3a3a4a;
+      font-size: 1.2rem;
+      margin: 0 4px 30px;
+    }
+
+    .you-marker {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 8px;
+    }
+
+    .you-marker .you-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px dashed rgba(244,88,102,0.5);
+      background: rgba(244,88,102,0.1);
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 12px;
-    }
-
-    .test-link-content {
-      flex: 1;
-    }
-
-    .test-link-title {
-      display: block;
-      font-size: 1rem;
-      font-weight: 500;
-      color: #e8e8ed;
-      margin-bottom: 4px;
-    }
-
-    .test-link-desc {
-      display: block;
-      font-size: 0.85rem;
-      color: #5a5a6e;
-    }
-
-    .test-link-arrow {
       font-size: 1.2rem;
-      color: #5a5a6e;
-      transition: transform 0.2s;
     }
 
-    .test-link:hover .test-link-arrow {
-      transform: translateX(4px);
+    .you-marker .name {
+      font-size: 0.65rem;
       color: #f45866;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .you-marker .wpm {
+      font-size: 0.55rem;
+      color: #a85860;
+    }
+
+    .test-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      background: #f45866;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border-radius: 100px;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .test-cta:hover {
+      background: #ff6b78;
+      box-shadow: 0 6px 24px rgba(244,88,102,0.4);
+      transform: translateY(-2px);
+    }
+
+    .test-cta svg {
+      width: 18px;
+      height: 18px;
     }
 
     @media (max-width: 700px) {
@@ -577,6 +689,41 @@
       .container {
         padding: 24px 16px;
       }
+
+      .famous-lineup {
+        gap: 4px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .famous-person img,
+      .you-marker .you-circle {
+        width: 40px;
+        height: 40px;
+      }
+
+      .famous-person .name,
+      .you-marker .name {
+        font-size: 0.5rem;
+      }
+
+      .famous-person .wpm,
+      .you-marker .wpm {
+        font-size: 0.45rem;
+      }
+
+      .famous-divider {
+        font-size: 0.9rem;
+        margin: 0 2px 24px;
+      }
+
+      .test-section {
+        padding: 24px 16px;
+      }
+
+      .test-section-title {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
@@ -584,9 +731,14 @@
   <div class="container">
     <header>
       <h1>Speed Reader</h1>
+      <p class="tagline">Read faster by focusing on one word at a time. Paste your text below and hit <strong>Play</strong>.</p>
     </header>
 
     <div class="reader-area" id="readerArea">
+      <div class="reader-hint" id="readerHint">
+        <div class="hint-icon">&#9660;</div>
+        <div>Paste text below, then press Play</div>
+      </div>
       <div class="focus-line"></div>
       <div class="word-display" id="wordDisplay">
         <div class="word-inner" id="wordInner">
@@ -659,15 +811,66 @@
       </div>
     </div>
 
-    <!-- Test Link -->
-    <div class="test-link-section">
-      <a href="test.html" class="test-link">
-        <span class="test-link-icon">&#9889;</span>
-        <div class="test-link-content">
-          <span class="test-link-title">Test Your Comprehension</span>
-          <span class="test-link-desc">Find your optimal reading speed with 5 timed tests</span>
+    <!-- Test Section with Famous Readers -->
+    <div class="test-section">
+      <div class="test-section-header">
+        <h2 class="test-section-title">How Fast Can You Read?</h2>
+        <p class="test-section-subtitle">Find your speed and see where you rank among famous readers</p>
+      </div>
+
+      <div class="famous-lineup">
+        <div class="famous-person">
+          <img src="images/tom-cruise.jpg" alt="Tom Cruise">
+          <span class="name">Tom Cruise</span>
+          <span class="wpm">180 WPM</span>
         </div>
-        <span class="test-link-arrow">&rarr;</span>
+
+        <span class="famous-divider">&lt;</span>
+
+        <div class="you-marker">
+          <div class="you-circle">?</div>
+          <span class="name">YOU</span>
+          <span class="wpm">??? WPM</span>
+        </div>
+
+        <span class="famous-divider">&lt;</span>
+
+        <div class="famous-person">
+          <img src="images/bill-gates.jpg" alt="Bill Gates">
+          <span class="name">Bill Gates</span>
+          <span class="wpm">750 WPM</span>
+        </div>
+
+        <span class="famous-divider">&lt;</span>
+
+        <div class="famous-person">
+          <img src="images/jfk.jpg" alt="JFK">
+          <span class="name">JFK</span>
+          <span class="wpm">1,200 WPM</span>
+        </div>
+
+        <span class="famous-divider">&lt;</span>
+
+        <div class="famous-person">
+          <img src="images/warren-buffett.jpg" alt="Warren Buffett">
+          <span class="name">Buffett</span>
+          <span class="wpm">2,000 WPM</span>
+        </div>
+
+        <span class="famous-divider">&lt;</span>
+
+        <div class="famous-person">
+          <img src="images/anne-jones.jpg" alt="Anne Jones">
+          <span class="name">Anne Jones</span>
+          <span class="wpm">4,251 WPM</span>
+        </div>
+      </div>
+
+      <a href="test.html" class="test-cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        Take the Test
       </a>
     </div>
   </div>
@@ -698,6 +901,7 @@
   <script>
     const wordDisplay = document.getElementById('wordDisplay');
     const wordInner = document.getElementById('wordInner');
+    const readerHint = document.getElementById('readerHint');
     const playBtn = document.getElementById('playBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const resetBtn = document.getElementById('resetBtn');
@@ -788,6 +992,12 @@
       words = text.split(/\s+/).filter(w => w.length > 0);
       wordCount.textContent = words.length;
       updateProgress();
+      // Hide hint when there's text
+      if (words.length > 0) {
+        readerHint.classList.add('hidden');
+      } else {
+        readerHint.classList.remove('hidden');
+      }
     }
 
     function updateProgress() {
