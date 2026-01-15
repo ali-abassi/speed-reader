@@ -126,11 +126,29 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      transform: translate(-50%, -50%);
-      width: 1px;
-      height: 90px;
-      background: linear-gradient(to bottom, transparent, rgba(244,88,102,0.3) 30%, rgba(244,88,102,0.3) 70%, transparent);
+      transform: translateX(-50%);
+      width: 2px;
+      height: 120px;
       pointer-events: none;
+    }
+
+    .focus-line::before,
+    .focus-line::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 20px;
+      background: rgba(255,255,255,0.4);
+    }
+
+    .focus-line::before {
+      top: 0;
+    }
+
+    .focus-line::after {
+      bottom: 0;
     }
 
     .wpm-display {
@@ -498,7 +516,12 @@
     }
 
     .theater-mode .focus-line {
-      height: 160px;
+      height: 200px;
+    }
+
+    .theater-mode .focus-line::before,
+    .theater-mode .focus-line::after {
+      height: 30px;
     }
 
     .theater-mode .wpm-display {
@@ -1288,11 +1311,17 @@
       const centerY = H / 2;
       const startX = centerX - beforeWidth - (orpWidth / 2);
 
-      // Draw focus line
-      ctx.strokeStyle = 'rgba(244,88,102,0.3)';
+      // Draw focus alignment lines (above and below word, not through it)
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
       ctx.lineWidth = 2;
+      // Top line
       ctx.beginPath();
       ctx.moveTo(centerX, centerY - 80);
+      ctx.lineTo(centerX, centerY - 50);
+      ctx.stroke();
+      // Bottom line
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY + 50);
       ctx.lineTo(centerX, centerY + 80);
       ctx.stroke();
 
