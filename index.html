@@ -214,24 +214,38 @@
       box-shadow: 0 4px 24px rgba(244,88,102,0.3);
     }
 
-    button.icon-btn {
-      padding: 10px 16px;
-      font-size: 1rem;
+    .secondary-controls {
+      margin-top: 8px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.04);
     }
 
-    button.export-btn {
-      background: rgba(76,175,80,0.15);
-      border-color: rgba(76,175,80,0.3);
-      color: #4caf50;
+    .secondary-controls button,
+    .secondary-controls .btn-link {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #8a8a9e;
+      padding: 10px 18px;
+      font-size: 0.8rem;
     }
 
-    button.export-btn:hover {
-      background: rgba(76,175,80,0.25);
-      border-color: rgba(76,175,80,0.5);
-      color: #6fcf73;
+    .secondary-controls button:hover,
+    .secondary-controls .btn-link:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.1);
+      color: #b8b8c8;
     }
 
-    button.export-btn.recording {
+    .btn-link {
+      display: inline-block;
+      text-decoration: none;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 100px;
+      transition: all 0.2s ease;
+    }
+
+    #exportBtn.recording {
       background: rgba(244,67,54,0.2);
       border-color: rgba(244,67,54,0.4);
       color: #f44336;
@@ -345,11 +359,11 @@
 
     .stats {
       display: flex;
-      gap: 32px;
+      gap: 20px;
       justify-content: center;
-      padding: 16px 0;
+      padding: 10px 0;
       color: #5a5a6e;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
 
     .stat {
@@ -362,13 +376,13 @@
 
     .mode-toggle {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       justify-content: center;
     }
 
     .mode-toggle button {
-      padding: 10px 20px;
-      font-size: 0.8rem;
+      padding: 8px 16px;
+      font-size: 0.75rem;
     }
 
     .mode-toggle button.active {
@@ -782,31 +796,30 @@
     </div>
 
     <div class="controls">
-      <div class="control-row">
+      <div class="control-row main-controls">
         <button id="playBtn" class="primary">Play</button>
-        <button id="pauseBtn">Pause</button>
         <button id="resetBtn">Reset</button>
-        <button id="theaterBtn" class="icon-btn" title="Focus Mode">Focus Mode</button>
-        <button id="exportBtn" class="export-btn" title="Export as Video for X">Export as Video</button>
-      </div>
-
-      <div class="control-row">
         <div class="speed-control">
-          <label>Speed:</label>
           <input type="range" id="wpmSlider" min="100" max="1200" value="300" step="50">
           <span class="speed-value" id="wpmValue">300 wpm</span>
         </div>
       </div>
 
       <div class="control-row mode-toggle">
-        <button id="modeFixed" class="active">Fixed Speed</button>
-        <button id="modeRamp">Ramp Up (300-900)</button>
+        <button id="modeFixed" class="active">Fixed</button>
+        <button id="modeRamp">Ramp Up</button>
       </div>
 
       <div class="stats">
-        <div class="stat">Words: <span id="wordCount">0</span></div>
-        <div class="stat">Progress: <span id="wordProgress">0/0</span></div>
-        <div class="stat">Time: <span id="timeEstimate">0:00</span></div>
+        <span class="stat">Words: <span id="wordCount">0</span></span>
+        <span class="stat">Progress: <span id="wordProgress">0/0</span></span>
+        <span class="stat">Time: <span id="timeEstimate">0:00</span></span>
+      </div>
+
+      <div class="control-row secondary-controls">
+        <button id="theaterBtn">Focus Mode</button>
+        <button id="exportBtn">Export as Video</button>
+        <a href="test.html" class="btn-link">Test Your Reading Speed</a>
       </div>
     </div>
 
@@ -945,7 +958,6 @@
     const wordInner = document.getElementById('wordInner');
     const readerHint = document.getElementById('readerHint');
     const playBtn = document.getElementById('playBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
     const resetBtn = document.getElementById('resetBtn');
     const wpmSlider = document.getElementById('wpmSlider');
     const wpmValue = document.getElementById('wpmValue');
@@ -1147,7 +1159,6 @@
 
     // Event listeners
     playBtn.addEventListener('click', () => isPlaying ? pause() : play());
-    pauseBtn.addEventListener('click', pause);
     resetBtn.addEventListener('click', reset);
     theaterPlayBtn.addEventListener('click', () => isPlaying ? pause() : play());
     theaterPauseBtn.addEventListener('click', pause);
@@ -1379,6 +1390,7 @@
         isExporting = false;
         exportBtn.classList.remove('recording');
         exportBtn.textContent = 'Export as Video';
+        exportBtn.title = 'Export as Video for X';
       };
 
       mediaRecorder.start();
