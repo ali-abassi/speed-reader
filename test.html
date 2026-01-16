@@ -1270,17 +1270,23 @@
 
       nextBtn.style.display = currentTest < 4 ? 'inline-block' : 'none';
 
-      // Generate share link
+      // Generate share link with site URL
       const scoreEmoji = correct === 3 ? '🎯' : correct === 2 ? '✅' : '📖';
       let speedContext = '';
-      if (test.wpm >= 700) speedContext = " — faster than 95% of readers!";
-      else if (test.wpm >= 500) speedContext = " — speed reader level!";
-      else if (test.wpm >= 350) speedContext = " — above average!";
-      const shareText = `${scoreEmoji} I scored ${correct}/3 comprehension at ${test.wpm} WPM${speedContext}\n\nTest your reading speed ⚡`;
+      if (correct >= 2 && test.wpm >= 700) speedContext = " — faster than 95% of readers!";
+      else if (correct >= 2 && test.wpm >= 500) speedContext = " — speed reader level!";
+      else if (correct >= 2 && test.wpm >= 350) speedContext = " — above average!";
+      const shareText = `${scoreEmoji} I scored ${correct}/3 comprehension at ${test.wpm} WPM${speedContext}\n\nTest your reading speed ⚡\nhttps://ali-abassi.github.io/speed-reader/test.html`;
       shareBtn.href = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 
-      // Update comparison section
-      updateComparison(test.wpm);
+      // Only show comparison section if they scored well (2+ correct)
+      const comparisonSection = document.getElementById('comparisonSection');
+      if (correct >= 2) {
+        comparisonSection.style.display = 'block';
+        updateComparison(test.wpm);
+      } else {
+        comparisonSection.style.display = 'none';
+      }
 
       // Show summary if multiple tests completed
       const completedCount = scores.filter(s => s !== null).length;
