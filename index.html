@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/mp4-muxer@5.1.3/build/mp4-muxer.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -1365,13 +1366,18 @@
         return;
       }
 
+      // Check WebCodecs support
+      if (typeof VideoEncoder === 'undefined') {
+        alert('Your browser does not support video encoding. Please use Chrome or Edge.');
+        return;
+      }
+
       // Calculate estimated duration
       const exportRampMode = rampMode;
       const exportWpm = wpm;
       const totalWords = words.length;
       let estSeconds;
       if (exportRampMode) {
-        // Average WPM in ramp mode is (300+900)/2 = 600
         estSeconds = (totalWords / 600) * 60;
       } else {
         estSeconds = (totalWords / exportWpm) * 60;
@@ -1390,62 +1396,110 @@
 
       isExporting = true;
       exportBtn.classList.add('recording');
-      exportBtn.textContent = 'Recording...';
+      exportBtn.textContent = 'Encoding...';
 
-      // Setup MediaRecorder - 9:16 vertical optimized for X, high quality
-      const stream = exportCanvas.captureStream(60);
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp9',
-        videoBitsPerSecond: 15000000
-      });
+      const W = 1920;
+      const H = 1080;
+      const fps = 30;
 
-      const chunks = [];
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
+      try {
+        // Setup mp4-muxer
+        const muxer = new Mp4Muxer.Muxer({
+          target: new Mp4Muxer.ArrayBufferTarget(),
+          video: {
+            codec: 'avc',
+            width: W,
+            height: H,
+          },
+          fastStart: 'in-memory',
+        });
+
+        // Setup VideoEncoder
+        const encoder = new VideoEncoder({
+          output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+          error: (e) => console.error('Encoder error:', e),
+        });
+
+        encoder.configure({
+          codec: 'avc1.640028',
+          width: W,
+          height: H,
+          bitrate: 8_000_000,
+          framerate: fps,
+        });
+
+        let frameIndex = 0;
+        let timestamp = 0;
+
+        // Encode each word
+        for (let i = 0; i < totalWords; i++) {
+          if (!isExporting) break;
+
+          let currentWpmVal;
+          if (exportRampMode) {
+            const progress = i / totalWords;
+            currentWpmVal = Math.round(RAMP_START + (RAMP_END - RAMP_START) * progress);
+          } else {
+            currentWpmVal = exportWpm;
+          }
+
+          drawWordToCanvas(words[i], currentWpmVal);
+
+          // Calculate how many frames for this word
+          const wordDurationMs = 60000 / currentWpmVal;
+          const numFrames = Math.max(1, Math.round((wordDurationMs / 1000) * fps));
+
+          for (let f = 0; f < numFrames; f++) {
+            const frame = new VideoFrame(exportCanvas, {
+              timestamp: timestamp,
+              duration: 1_000_000 / fps,
+            });
+            encoder.encode(frame, { keyFrame: frameIndex % 30 === 0 });
+            frame.close();
+            timestamp += 1_000_000 / fps;
+            frameIndex++;
+          }
+
+          // Update progress
+          const pct = Math.round(((i + 1) / totalWords) * 100);
+          exportBtn.textContent = `Encoding ${pct}%`;
+
+          // Yield to UI
+          if (i % 10 === 0) await new Promise(r => setTimeout(r, 0));
+        }
+
+        // Final "Done!" frame for 1 second
+        drawWordToCanvas('Done!', exportRampMode ? RAMP_END : exportWpm);
+        for (let f = 0; f < fps; f++) {
+          const frame = new VideoFrame(exportCanvas, {
+            timestamp: timestamp,
+            duration: 1_000_000 / fps,
+          });
+          encoder.encode(frame, { keyFrame: false });
+          frame.close();
+          timestamp += 1_000_000 / fps;
+        }
+
+        // Finalize
+        await encoder.flush();
+        muxer.finalize();
+
+        const { buffer } = muxer.target;
+        const blob = new Blob([buffer], { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'speed-reader.webm';
+        a.download = 'speed-reader.mp4';
         a.click();
         URL.revokeObjectURL(url);
-
-        isExporting = false;
-        exportBtn.classList.remove('recording');
-        exportBtn.textContent = 'Export as Video';
-        exportBtn.title = 'Export as Video for X';
-      };
-
-      mediaRecorder.start();
-
-      // Render each word
-      for (let i = 0; i < totalWords; i++) {
-        if (!isExporting) break;
-
-        let currentWpmVal;
-        if (exportRampMode) {
-          const progress = i / totalWords;
-          currentWpmVal = Math.round(RAMP_START + (RAMP_END - RAMP_START) * progress);
-        } else {
-          currentWpmVal = exportWpm;
-        }
-
-        drawWordToCanvas(words[i], currentWpmVal);
-
-        // Update button with progress
-        const pct = Math.round(((i + 1) / totalWords) * 100);
-        exportBtn.textContent = `Recording ${pct}%`;
-
-        // Wait for frame duration
-        const delay = 60000 / currentWpmVal;
-        await new Promise(r => setTimeout(r, delay));
+      } catch (err) {
+        console.error('Export failed:', err);
+        alert('Video export failed: ' + err.message);
       }
 
-      // Final frame
-      drawWordToCanvas('Done!', rampMode ? RAMP_END : wpm);
-      await new Promise(r => setTimeout(r, 1000));
-
-      mediaRecorder.stop();
+      isExporting = false;
+      exportBtn.classList.remove('recording');
+      exportBtn.textContent = 'Export as Video';
     }
 
     exportBtn.addEventListener('click', () => {
